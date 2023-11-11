@@ -42,6 +42,7 @@ export const UnorderedList = styled.ul`
   font-weight: 400;
   font-size: 15px;
   font-family: Iter, sans-serif;
+  margin: 0;
 `;
 
 export const ListItem = styled.li`
@@ -66,5 +67,9 @@ export const ListItem = styled.li`
     & > img {
       width: 20px;
     }
+  }
+
+  & > svg {
+    color: ${colorPalet.colorYellowYellow100};
   }
 `;
