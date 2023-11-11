@@ -9,6 +9,8 @@ const BoardContext = createContext();
 
 export const BoardProvider = ({ children }) => {
   let [count, setCount] = useState(0);
+  const [round, setRound] = useState(1);
+  const [roundMax, setRoundMax] = useState(3);
   let square1 = useRef(null);
   let square2 = useRef(null);
   let square3 = useRef(null);
@@ -18,17 +20,36 @@ export const BoardProvider = ({ children }) => {
   let square7 = useRef(null);
   let square8 = useRef(null);
   let square9 = useRef(null);
-  let squaresRef = [square1, square2, square3, square4, square5, square6, square7, square8, square9]
+  let squaresRef = [
+    square1,
+    square2,
+    square3,
+    square4,
+    square5,
+    square6,
+    square7,
+    square8,
+    square9,
+  ];
 
   const [squares, setSquares] = useState(Array(9).fill(false));
   const [lock, setLock] = useState(false);
   const [markX, setMarkX] = useState({
     src: playerX,
     alt: "Player chosen mark",
+    score: 0,
+    name: ""
   });
   const [markZero, setMarkZero] = useState({
     src: playerZero,
     alt: "Player chosen mark",
+    score: 0,
+    name: ""
+  });
+  const [nextPlayer, setNextPlayer] = useState({
+    src: playerX,
+    alt: "Player chosen mark",
+    score: 0,
   });
 
   const handleClick = useCallback(
@@ -39,10 +60,12 @@ export const BoardProvider = ({ children }) => {
         e.target.innerHTML = `<img src=${markX.src} alt=${markX.alt} width={110} />`;
         data[num] = "x";
         setCount(++count);
+        setNextPlayer((prev) => ({ ...prev, src: markZero.src, score: markZero.score}));
       } else {
         e.target.innerHTML = `<img src=${markZero.src} alt=${markZero.alt} width={110} />`;
         data[num] = "o";
         setCount(++count);
+        setNextPlayer((prev) => ({ ...prev, src: markX.src, score: markX.score}));
       }
 
       checkWin();
@@ -77,11 +100,13 @@ export const BoardProvider = ({ children }) => {
     setLock(true);
     if (winner === "x") {
       console.log("X won!");
-      reset()
+      reset();
+      setMarkX((prev) => ({ ...prev, score: prev.score + 1 }));
     } else {
       console.log("O won!");
-      reset()
-    } 
+      reset();
+      setMarkZero((prev) => ({ ...prev, score: prev.score + 1 }));
+    }
   };
 
   const checkDraw = () => {
@@ -94,16 +119,28 @@ export const BoardProvider = ({ children }) => {
     setLock(false);
     data = ["", "", "", "", "", "", "", "", ""];
 
+    if (round < roundMax) {
+      setRound(round + 1);
+    }
+    bestOfThree();
+
     setTimeout(() => {
       squaresRef.forEach((square) => {
         square.current.innerHTML = "";
       });
-    }, 5000)
+    }, 10000);
+  };
+
+  const bestOfThree = () => {
+    console.log(round);
+    if (round === roundMax) {
+      window.location.reload();
+    }
   };
 
   const value = useMemo(() => {
-    return { squares, squaresRef, handleClick };
-  }, [squares, squaresRef, handleClick]);
+    return { squares, squaresRef, markX, markZero, round, nextPlayer, handleClick };
+  }, [squares, squaresRef, markX, markZero, round, nextPlayer, handleClick]);
 
   return (
     <BoardContext.Provider value={value}>{children}</BoardContext.Provider>

@@ -34,15 +34,17 @@ export const Holder = styled.div`
 export const ContainerItem = styled.div`
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 35px;
   background-color: ${colorPalet.colorBlueBlue200};
   width: 200px;
+  height: 40px;
   padding: 20px 40px;
   border-radius: 20px;
   border: 5px solid ${colorPalet.colorBaseBlack100};
   color: ${colorPalet.colorYellowYellow50};
   font-weight: 700;
   font-size: 30px;
+  white-space: nowrap;
 
   & > span {
     display: flex;
