@@ -1,4 +1,11 @@
-import { createContext, useCallback, useState, useMemo, useRef } from "react";
+import {
+  createContext,
+  useCallback,
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 
 import playerX from "../assets/x.svg";
 import playerZero from "../assets/zero.svg";
@@ -38,41 +45,76 @@ export const BoardProvider = ({ children }) => {
     src: playerX,
     alt: "Player chosen mark",
     score: 0,
-    name: ""
+    name: "",
   });
   const [markZero, setMarkZero] = useState({
     src: playerZero,
     alt: "Player chosen mark",
     score: 0,
-    name: ""
+    name: "",
   });
   const [nextPlayer, setNextPlayer] = useState({
     src: playerX,
     alt: "Player chosen mark",
     score: 0,
   });
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [isInitialModal, setIsInitialModal] = useState(true);
 
-  const handleClick = useCallback(
-    (e, num) => {
-      if (lock) return 0;
+  const openModal = () => {
+    setIsOpen(true);
+  };
 
-      if (count % 2 === 0) {
-        e.target.innerHTML = `<img src=${markX.src} alt=${markX.alt} width={110} />`;
-        data[num] = "x";
-        setCount(++count);
-        setNextPlayer((prev) => ({ ...prev, src: markZero.src, score: markZero.score}));
-      } else {
-        e.target.innerHTML = `<img src=${markZero.src} alt=${markZero.alt} width={110} />`;
-        data[num] = "o";
-        setCount(++count);
-        setNextPlayer((prev) => ({ ...prev, src: markX.src, score: markX.score}));
-      }
+  useEffect(() => {
+    openModal();
+  }, [isInitialModal]);
 
-      checkWin();
-      checkDraw();
+  const afterOpenModal = useCallback(() => {
+    // references are now sync'd and can be accessed.
+  });
+
+  const closeModal = useCallback(() => {
+    if ((isInitialModal) && (playerName !== "")) {
+      setIsOpen(false);
+    }
+  }, [playerName, isInitialModal]);
+
+  const formSubmit = useCallback((e) => {
+    e.preventDefault();
+    closeModal();
+  })
+
+  const handleClick = useCallback((e, num) => {
+    // setIsInitialModal(false)
+    // openModal()
+
+    if (lock) return 0;
+
+    if (count % 2 === 0) {
+      e.target.innerHTML = `<img src=${markX.src} alt=${markX.alt} width=110 />`;
+      data[num] = "x";
+      setCount(++count);
+      setNextPlayer((prev) => ({
+        ...prev,
+        src: markZero.src,
+        score: markZero.score,
+      }));
+    } else {
+      e.target.innerHTML = `<img src=${markZero.src} alt=${markZero.alt} width=110 />`;
+      data[num] = "o";
+      setCount(++count);
+      setNextPlayer((prev) => ({
+        ...prev,
+        src: markX.src,
+        score: markX.score,
+      }));
+    }
+
+    checkWin();
+    checkDraw();
     },
-    [count, lock, markX.src, markX.alt, markZero.src, markZero.alt]
-  );
+  [count, lock, markX.src, markX.alt, markZero.src, markZero.alt]);
 
   const checkWin = () => {
     if (data[0] === data[1] && data[1] === data[2] && data[2] !== "") {
@@ -128,19 +170,68 @@ export const BoardProvider = ({ children }) => {
       squaresRef.forEach((square) => {
         square.current.innerHTML = "";
       });
-    }, 10000);
+    }, 2000);
   };
 
+  //fix this function
   const bestOfThree = () => {
     console.log(round);
     if (round === roundMax) {
-      window.location.reload();
+      if(markX.score > markZero.score) {
+        console.log("X won the best of three!");
+        setIsInitialModal(false);
+        openModal()
+      } else if (markX.score < markZero.score) {
+        console.log("O won the best of three!");
+        setIsInitialModal(false);
+        openModal()
+      } else {
+        console.log("It's a draw!");
+        setIsInitialModal(false);
+        openModal()
+      }
     }
   };
 
+  const reload = () => {
+    window.location.reload();
+  }
+
   const value = useMemo(() => {
-    return { squares, squaresRef, markX, markZero, round, nextPlayer, handleClick };
-  }, [squares, squaresRef, markX, markZero, round, nextPlayer, handleClick]);
+    return {
+      squares,
+      squaresRef,
+      markX,
+      markZero,
+      round,
+      nextPlayer,
+      modalIsOpen,
+      playerName,
+      formSubmit,
+      isInitialModal,
+      setPlayerName,
+      afterOpenModal,
+      closeModal,
+      handleClick,
+      reload
+    };
+  }, [
+    squares,
+    squaresRef,
+    markX,
+    markZero,
+    round,
+    nextPlayer,
+    modalIsOpen,
+    playerName,
+    formSubmit,
+    isInitialModal,
+    setPlayerName,
+    afterOpenModal,
+    closeModal,
+    handleClick,
+    reload
+  ]);
 
   return (
     <BoardContext.Provider value={value}>{children}</BoardContext.Provider>
